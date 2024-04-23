@@ -1,0 +1,81 @@
+#3. Convolutional neural network (CNN) (Any One from the following)
+#..   Use any dataset of plant disease and design a plant disease detection system using CNN.
+#..   Use MNIST Fashion Dataset and create a classifier to classify fashion clothing into categories.
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import MinMaxScaler
+
+import tensorflow
+from tensorflow import keras
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Flatten,Dense, MaxPool2D
+from tensorflow.keras.callbacks import EarlyStopping
+
+(x_train, y_train),(x_test, y_test)=keras.datasets.mnist.load_data()
+x_train.shape
+x_test.shape
+
+plt.imshow(x_train[0])
+
+y_train[0]
+
+x_train[0]
+
+# As image pixel ranges from 0 to 255 we need to scale it between 0 to 1
+x_train_sc = x_train/255
+x_test_sc= x_test/255
+
+x_train_sc[0]
+
+#Create a Sequential Model.
+# impage is first flattened to make the multidimensional input one-dimensional
+# Using relu as activation in hidden layers
+# as this is multiclassification problem, Used softmax as activation function in output layer.
+model= Sequential()
+model.add(Flatten(input_shape=(28,28)))
+model.add(Dense(128, activation="relu"))
+model.add(Dense(10, activation="softmax"))
+
+model.summary()
+
+#compiled model using 
+#optimizer as adam
+#loss as sparse_categorical_crossentropy as there are multiple classes.
+#Evaluation metrics as accuracy
+model.compile(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics= ["accuracy"]
+)
+
+#Early stoppage is passed in callbacks to avoid over fitting
+es= EarlyStopping(monitor="val_loss", patience=4)
+
+
+history= model.fit(
+    x_train_sc, 
+    y_train,
+    verbose= 1,
+    batch_size=100,
+    epochs=5,
+    validation_data=(x_test_sc,y_test),
+    callbacks= [es]
+)
+
+#As seen above accuracy score on training data is 98.05% and on test data is 97.09%
+# results are good and can be considered for deployment
+# Evaluation is done on test data as follows
+
+model.evaluate(x_test_sc, y_test)
+
+model.predict(x_test_sc)
+
+plt.plot(history.history["loss"], label="loss")
+plt.plot(history.history["val_loss"], label="val_loss")
+plt.legend()
+
+plt.plot(history.history["accuracy"], label="accuracy")
+plt.plot(history.history["val_accuracy"], label="val_accuracy")
+plt.legend()
